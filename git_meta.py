@@ -3,9 +3,12 @@ from __future__ import print_function
 
 import os
 import sys
+import re
 
 import argparse
 
+
+branch_regex = re.compile('ref: refs/heads/(.*)')
 
 def is_git_init():
     return os.path.isdir(".git")
@@ -23,7 +26,12 @@ def create_meta_directory():
 
 
 def get_current_git_branch():
-    return 'branch'
+    with open('.git/HEAD') as f:
+        head = f.read()
+        match = branch_regex.match(head)
+        if match:
+            return match.groups()[0]
+    return None
 
 
 def get_meta_path():
