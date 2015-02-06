@@ -1,6 +1,8 @@
 # git-meta
 Add metadata to git repositories
 
+To install, simply add 'git-meta' to your PATH
+
 Usage:
 git meta -m "This is the best branch"
 
