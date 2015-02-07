@@ -69,6 +69,15 @@ def restore_branch(branch_str):
 
 
 def restore_single_branch(branch):
+
+    if not os.path.exists(get_hidden_path(branch)):
+        print("Hidden branch {} does not exist".format(branch))
+        return
+
+    if os.path.exists(get_branch_path(branch)):
+        print("Cannot restore hidden branch {}, there is a non-hidden branch of the same name".format(branch))
+        return
+
     source = get_hidden_path(branch)
     destination = get_branch_path(branch)
     os.rename(source, destination)
@@ -93,7 +102,7 @@ def main():
     args = parser.parse_args()
 
     if len([val for val in vars(args).values()
-            if val is not None]) > 1:
+            if val]) > 1:
         print("You may only supply one argument")
         return
 
