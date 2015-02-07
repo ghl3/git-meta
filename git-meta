@@ -58,7 +58,7 @@ def clear_meta():
         return
     else:
         os.remove(get_meta_path())
-    
+
 
 def main():
 

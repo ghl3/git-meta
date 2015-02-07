@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import os
+import sys
+import re
+
+import argparse
+from subprocess import call
+
+def make_branches_dir():
+    try:
+        os.makedirs('.git/refs.branches')
+    except OSError:
+        pass
+
+
+def archive_branch(branch):
+    make_archive = "git update-ref refs/hidden/{0} {0}".format(branch)
+    res = call(make_archive, shell=True)
+    if res != 0:
+        return
+
+    delete_branch = "git branch -D {}".format(branch)
+    res = call(delete_branch, shell=True)
+    if res != 0:
+        return
+
+
+def restore_branch(branch):
+    source = '.git/refs/hidden/{}'.format(branch)
+    destination = '.git/refs/heads/{}'.format(branch)
+    os.rename(source, destination)
+
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Process some integers.')
+
+    parser.add_argument('-b', '--branch', help='Branch to archive')
+
+    parser.add_argument('-r', '--restore', help='Restore a hidden branch')
+
+    args = parser.parse_args()
+
+    if args.branch:
+        archive_branch(args.branch)
+
+    if args.restore:
+        restore_branch(args.restore)
+
+
+if __name__ == '__main__':
+    main()
