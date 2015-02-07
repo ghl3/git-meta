@@ -2,40 +2,52 @@
 
 from __future__ import print_function
 
+import glob
 import os
 import sys
 import re
+from os.path import basename
 
 import argparse
 from subprocess import call
 
-#def make_branches_dir():
-#    try:
-#        os.makedirs('.git/refsbranches')
-#    except OSError:
-#        pass
 
-
-def get_branch_name(branch):
+def get_branch_path(branch):
     return '.git/refs/heads/{}'.format(branch)
 
-def get_hidden_name(branch):
+def get_hidden_path(branch):
     return '.git/refs/hidden/{}'.format(branch)
 
 
-def archive_branch(branch):
+def hide_branch(branch_str, hide_master=False):
 
-    if not os.path.exists(get_branch_name(branch)):
+    if '*' in branch_str:
+        branches = glob.glob('.git/refs/heads/{}'.format(branch_str))
+        for branch in branches:
+
+            # User experience check
+            if branch == 'master' and not hide_master:
+                continue
+
+            hide_single_branch(basename(branch))
+
+    else:
+        hide_single_branch(branch_str)
+
+
+def hide_single_branch(branch):
+
+    if not os.path.exists(get_branch_path(branch)):
         print("Branch {} does not exist".format(branch))
         return
 
-    # Don't archive an existing branch
-    if os.path.exists(get_hidden_name(branch)):
+    # Don't hide an existing branch
+    if os.path.exists(get_hidden_path(branch)):
         print("Hidden branch: {} already exists".format(branch))
         return
 
-    make_archive = "git update-ref refs/hidden/{0} {0}".format(branch)
-    res = call(make_archive, shell=True)
+    make_hide = "git update-ref refs/hidden/{0} {0}".format(branch)
+    res = call(make_hide, shell=True)
     if res != 0:
         return
 
@@ -45,9 +57,21 @@ def archive_branch(branch):
         return
 
 
-def restore_branch(branch):
-    source = get_hidden_name(branch)
-    destination = get_branch_name(branch)
+
+def restore_branch(branch_str):
+
+    if '*' in branch_str:
+        branches = glob.glob('.git/refs/hidden/{}'.format(branch_str))
+        for branch in branches:
+            restore_single_branch(basename(branch))
+    else:
+        restore_single_branch(branch_str)
+
+
+
+def restore_single_branch(branch):
+    source = get_hidden_path(branch)
+    destination = get_branch_path(branch)
     os.rename(source, destination)
 
 
@@ -55,14 +79,16 @@ def main():
 
     parser = argparse.ArgumentParser(description='Process some integers.')
 
-    parser.add_argument('-b', '--branch', help='Branch to archive')
+    parser.add_argument('-b', '--branch', help='Branch to hide')
 
     parser.add_argument('-r', '--restore', help='Restore a hidden branch')
+
+    #parser.add_argument('-r', '--restore', help='Restore a hidden branch')
 
     args = parser.parse_args()
 
     if args.branch:
-        archive_branch(args.branch)
+        hide_branch(args.branch)
 
     if args.restore:
         restore_branch(args.restore)
