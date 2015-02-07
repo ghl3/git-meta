@@ -9,14 +9,31 @@ import re
 import argparse
 from subprocess import call
 
-def make_branches_dir():
-    try:
-        os.makedirs('.git/refs.branches')
-    except OSError:
-        pass
+#def make_branches_dir():
+#    try:
+#        os.makedirs('.git/refsbranches')
+#    except OSError:
+#        pass
+
+
+def get_branch_name(branch):
+    return '.git/refs/heads/{}'.format(branch)
+
+def get_hidden_name(branch):
+    return '.git/refs/hidden/{}'.format(branch)
 
 
 def archive_branch(branch):
+
+    if not os.path.exists(get_branch_name(branch)):
+        print("Branch {} does not exist".format(branch))
+        return
+
+    # Don't archive an existing branch
+    if os.path.exists(get_hidden_name(branch)):
+        print("Hidden branch: {} already exists".format(branch))
+        return
+
     make_archive = "git update-ref refs/hidden/{0} {0}".format(branch)
     res = call(make_archive, shell=True)
     if res != 0:
@@ -29,8 +46,8 @@ def archive_branch(branch):
 
 
 def restore_branch(branch):
-    source = '.git/refs/hidden/{}'.format(branch)
-    destination = '.git/refs/heads/{}'.format(branch)
+    source = get_hidden_name(branch)
+    destination = get_branch_name(branch)
     os.rename(source, destination)
 
 
