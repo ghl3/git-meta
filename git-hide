@@ -15,6 +15,7 @@ from subprocess import call
 def get_branch_path(branch):
     return '.git/refs/heads/{}'.format(branch)
 
+
 def get_hidden_path(branch):
     return '.git/refs/hidden/{}'.format(branch)
 
@@ -57,7 +58,6 @@ def hide_single_branch(branch):
         return
 
 
-
 def restore_branch(branch_str):
 
     if '*' in branch_str:
@@ -68,11 +68,16 @@ def restore_branch(branch_str):
         restore_single_branch(branch_str)
 
 
-
 def restore_single_branch(branch):
     source = get_hidden_path(branch)
     destination = get_branch_path(branch)
     os.rename(source, destination)
+
+
+def show_hidden_branches():
+    hidden = glob.glob('.git/refs/hidden/*')
+    for branch in hidden:
+        print(basename(branch))
 
 
 def main():
@@ -81,17 +86,25 @@ def main():
 
     parser.add_argument('-b', '--branch', help='Branch to hide')
 
+    parser.add_argument('-s', '--show', action='store_true', help='Show all hidden branches')
+
     parser.add_argument('-r', '--restore', help='Restore a hidden branch')
 
-    #parser.add_argument('-r', '--restore', help='Restore a hidden branch')
-
     args = parser.parse_args()
+
+    if len([val for val in vars(args).values()
+            if val is not None]) > 1:
+        print("You may only supply one argument")
+        return
 
     if args.branch:
         hide_branch(args.branch)
 
     if args.restore:
         restore_branch(args.restore)
+
+    if args.show:
+        show_hidden_branches()
 
 
 if __name__ == '__main__':
