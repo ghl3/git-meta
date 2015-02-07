@@ -38,12 +38,14 @@ Hide branches that are no longer in use (but that you don't want to delete)
 Usage:
 
 git branch hide-me
+
 git banch
 
     master
     hide-me
 
 git hide -b hide-me
+
 git branch
 
     master
@@ -53,6 +55,7 @@ git hide --show
     hide-me
 
 git hide --restore hide-me
+
 git branch
 
     master
